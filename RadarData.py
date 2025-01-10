@@ -14,9 +14,12 @@ class RadarData:
 
     Args:
         path (str): chemin du fichier radar
+        flex (bool): si le fichier provient du flex
         """
         self.path = path
-
+        self.flex = False
+        if(self.path.endswith(".dzt")):
+            self.flex = True
     def rd_img(self):
         """
     Méthode permettant de récupérer la zone sondée à partir d'un fichier .rd3 ou .rd7.
@@ -58,6 +61,16 @@ class RadarData:
                 DZT = DZT.transpose()
                 return DZT
             
+            elif(self.path.endswith(".dzt")): #Flex 
+                # Ouvrir le fichier en mode binaire
+                with open(self.path, mode='rb') as DZTdata:
+                    byte_data = DZTdata.read()
+                    # DZT est codé 4 octets
+                DZT = np.frombuffer(byte_data, dtype=np.int32)[(2**15):,]
+                # Reshape de rd7
+                DZT = DZT.reshape(self.get_feature()[0], self.get_feature()[1])
+                DZT = DZT.transpose()
+                return DZT            
             # À supprimer
             #README
             # Si vous souhaitez rajouter d'autres format:
@@ -126,6 +139,15 @@ class RadarData:
                 return value_trace, value_sample, value_dist_total, value_time,  value_step, value_step_time_acq, value_antenna
             else:
                 if(self.path.endswith(".DZT")):
+                    hdr = dzt.readgssi(infile=self.path, zero=[0])[0]
+                    value_trace = hdr['shape'][1]
+                    value_sample = hdr['shape'][0]
+                    value_dist_total = value_trace / hdr['dzt_spm']
+                    value_time = hdr['rhf_range']
+                    value_step = hdr['dzt_spm']
+                    value_step_time_acq = hdr['dzt_sps']
+                    value_antenna = hdr['rh_antname'][0]
+                elif(self.path.endswith(".dzt")):
                     hdr = dzt.readgssi(infile=self.path, zero=[0])[0]
                     value_trace = hdr['shape'][1]
                     value_sample = hdr['shape'][0]

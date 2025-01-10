@@ -39,8 +39,10 @@ class MainWindow():
         #self.center_window()
 
         # Affichage du Menu
-        self.ext_list = [".rd7", ".rd3", ".DZT"]
+        self.ext_list = [".rd7", ".rd3", ".DZT",".dzt"]
         self.freq_state = ["Filtrage désactivé", "Haute Fréquence", "Basse Fréquence"]
+        self.flex_antenna = ["Parralle","Perpendiculaire"]
+        self.flex_antenna_borne = [[0,1022],[1025,2046]]
         self.inv_list_state = "off"
         self.dewow_state = "off"
         self.inv_state = "off"
@@ -59,7 +61,7 @@ class MainWindow():
         self.t0_lin_value = 0
         self.gain_exp_value = 0.
         self.t0_exp_value = 0
-        self.epsilon = 6.
+        self.epsilon = 8.
         self.sub_mean_value = None
         self.cutoff_value = None
         self.sampling_value = None
@@ -195,7 +197,6 @@ class MainWindow():
         try:
             if(self.selected_folder != ""):
                 self.files_list = os.listdir(self.selected_folder)
-
                 # Trie de la liste
                 self.files_list.sort()
 
@@ -983,8 +984,14 @@ class MainWindow():
             self.Rcontroller = RadarController()
             self.feature = self.Rdata.get_feature()
 
+
             yindex = self.Yunit.index(self.ord_unit.currentText())
-            n_samp = self.feature[1]
+            
+            if(self.Rdata.flex): 
+                n_samp = self.flex_antenna_borne[0][1]
+            else:
+                n_samp = self.feature[1] 
+
             t_max = self.feature[3]
             p_max = (t_max * 10.**(-9)) * (cste_global["c_lum"] / sqrt(self.epsilon)) / 2
             L_max = [p_max, t_max, n_samp]

@@ -4,7 +4,7 @@ color = {
     "": "black",
     "Acier": "brown", 
     "Anomalie franche": "red",
-    "Anomalie hétérogène": "green",
+    "Anomalie hétérogène": "orange",
     "Réseaux": "blue", 
     "Autres": "purple"
 }
