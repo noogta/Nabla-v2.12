@@ -984,7 +984,6 @@ class MainWindow():
             self.Rcontroller = RadarController()
             self.feature = self.Rdata.get_feature()
 
-
             yindex = self.Yunit.index(self.ord_unit.currentText())
             
             if(self.Rdata.flex): 
@@ -1303,10 +1302,10 @@ class MainWindow():
                 self.epsilon_entry.setPlaceholderText(str(self.epsilon))
 
             if(self.cb_entry.text() != ''):
-                if(self.ord_unit.currentText() == "Profondeur"):
-                    cb = round((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
-                else:
+                if(self.ord_unit.currentText() == "Samples"):
                     cb = floor((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
+                else:
+                    cb = round((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
 
                 # Efface le contenu actuel de la zone de texte
                 self.cb_entry.clear()
@@ -1344,10 +1343,10 @@ class MainWindow():
 
             # Mettre à jour les t0
             if(self.t0_lin_entry.text() != '' and (self.prec_ord != self.ord_unit.currentText() or self.cb_entry.text() != '')):
-                if(self.ord_unit.currentText() == "Profondeur"):
-                    t0_lin_value = round((self.t0_lin_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],1)
-                else:
+                if(self.ord_unit.currentText() == "Samples"):
                     t0_lin_value = floor((self.t0_lin_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
+                else:
+                    t0_lin_value = round((self.t0_lin_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
                 
                 # Efface le contenu actuel de la zone de texte
                 self.t0_lin_entry.clear()
@@ -1356,7 +1355,7 @@ class MainWindow():
 
             if(self.t0_exp_entry.text() != '' and (self.prec_ord != self.ord_unit.currentText() or self.cb_entry.text() != '')):
                 if(self.ord_unit.currentText() == "Profondeur"):
-                    t0_exp_value = round((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],1)
+                    t0_exp_value = round((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
                 else:
                     t0_exp_value = floor((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
                 
@@ -1367,7 +1366,7 @@ class MainWindow():
 
             if(self.sub_mean_entry.text() != ''):
                 if(self.abs_unit.currentText() == "Distance"):
-                    sub_mean_value = round((self.sub_mean_value / n_tr) * L_xmax[self.Xunit.index(self.abs_unit.currentText())],1)
+                    sub_mean_value = round((self.sub_mean_value / n_tr) * L_xmax[self.Xunit.index(self.abs_unit.currentText())],2)
                 else:
                     sub_mean_value = floor((self.sub_mean_value / n_tr) * L_xmax[self.Xunit.index(self.abs_unit.currentText())])
 

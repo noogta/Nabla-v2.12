@@ -155,7 +155,7 @@ class RadarData:
                     value_time = hdr['rhf_range']
                     value_step = hdr['dzt_spm']
                     value_step_time_acq = hdr['dzt_sps']
-                    value_antenna = hdr['rh_antname'][0]
+                    value_antenna = hdr['rh_ant'][0]
                 return value_trace, value_sample, value_dist_total, value_time,  value_step, value_step_time_acq, value_antenna
         except:
             print("Erreur lors de la lecture des données:")
