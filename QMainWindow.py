@@ -988,6 +988,7 @@ class MainWindow():
             
             if(self.Rdata.flex): 
                 n_samp = self.flex_antenna_borne[0][1]
+                #n_samp = self.feature[1] 
             else:
                 n_samp = self.feature[1] 
 
@@ -1314,30 +1315,29 @@ class MainWindow():
                 self.cb_entry.setPlaceholderText(str(cb))
             else:
                 if(self.prec_ord != self.ord_unit.currentText()):
-                    if(self.ord_unit.currentText() == "Profondeur"):
-                        cb = round((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
-                    else:
+                    if(self.ord_unit.currentText() == "Samples"):
                         cb = floor((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
+                    else:
+                        cb = round((self.cb_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
 
                     # Efface le contenu actuel de la zone de texte
                     self.cb_entry.setPlaceholderText(str(cb))
 
             if(self.ce_entry.text() != ''):
-                if(self.ord_unit.currentText() == "Profondeur"):
-                    ce = round((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
-                else:
+                if(self.ord_unit.currentText() == "Samples"):
                     ce = floor((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
+                else:
+                    ce = round((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
                 
                 self.ce_entry.clear()
                 self.ce_entry.setText(str(ce))
                 self.ce_entry.setPlaceholderText(str(ce))   
             else:
                 if(self.prec_ord != self.ord_unit.currentText()):
-                    if(self.ord_unit.currentText() == "Profondeur"):
-                        ce = round((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
-                    else:
+                    if(self.ord_unit.currentText() == "Samples"):
                         ce = floor((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
-                    
+                    else:
+                        ce = round((self.ce_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
                     self.ce_entry.setPlaceholderText(str(ce))
 
 
@@ -1354,11 +1354,10 @@ class MainWindow():
                 self.t0_lin_entry.setPlaceholderText(str(t0_lin_value))
 
             if(self.t0_exp_entry.text() != '' and (self.prec_ord != self.ord_unit.currentText() or self.cb_entry.text() != '')):
-                if(self.ord_unit.currentText() == "Profondeur"):
-                    t0_exp_value = round((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
-                else:
+                if(self.ord_unit.currentText() == "Samples"):
                     t0_exp_value = floor((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())])
-                
+                else:
+                    t0_exp_value = round((self.t0_exp_value / n_samp) * L_ymax[self.Yunit.index(self.ord_unit.currentText())],2)
                 # Efface le contenu actuel de la zone de texte
                 self.t0_exp_entry.clear()
                 self.t0_exp_entry.setText(str(t0_exp_value))
