@@ -949,25 +949,78 @@ class MainWindow():
         self.shape_list.customContextMenuRequested.connect(self.QCanvas.del_ele_list)
 
         ######### Données #########
-        title_infos_layout = QVBoxLayout()
-        title_infos_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        sidebar_layout.addLayout(title_infos_layout)
 
-        infos_label = QLabel("Données sur l'image")
-        infos_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
-        title_infos_layout.addWidget(infos_label)
+        data_wid_ntb = QWidget()
+        notebook.addTab(data_wid_ntb, "Data")
 
+        data_layout = QVBoxLayout(data_wid_ntb)
+        data_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        title_data_layout = QHBoxLayout()
+        data_layout.addLayout(title_data_layout)
+        title_data_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        data_label = QLabel("Données sur l'image")
+        data_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        title_data_layout.addWidget(data_label)
+        
         self.data_xlabel = QLabel()
         self.data_xlabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        sidebar_layout.addWidget(self.data_xlabel)
+        data_layout.addWidget(self.data_xlabel)
 
         self.data_ylabel = QLabel()
         self.data_ylabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        sidebar_layout.addWidget(self.data_ylabel)
+        data_layout.addWidget(self.data_ylabel)
 
         self.ant_radar = QLabel()
         self.ant_radar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        sidebar_layout.addWidget(self.ant_radar)
+        data_layout.addWidget(self.ant_radar)
+
+# a convertir pour afficher le pointeur
+
+
+#Pointeur (a ajouter boutton pour afficher scope)
+        pointer_infos_layout = QVBoxLayout()
+        pointer_infos_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        sidebar_layout.addLayout(pointer_infos_layout)
+        
+        pointer_label = QLabel("Pointeur (X ; Z)")
+        pointer_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        pointer_infos_layout.addWidget(pointer_label)
+
+        pointer_layout = QHBoxLayout()
+        pointer_infos_layout.addLayout(pointer_layout)
+
+        pointer_label = QLabel("Pointeur:")
+        pointer_layout.addWidget(pointer_label)
+
+        data_pointer_layout = QVBoxLayout()
+        pointer_layout.addLayout(data_pointer_layout)
+
+        self.xpointer_label = QLabel()
+        self.ypointer_label = QLabel()
+        data_pointer_layout.addWidget(self.xpointer_label)
+        data_pointer_layout.addWidget(self.ypointer_label)
+
+        #title_infos_layout = QVBoxLayout()
+        #title_infos_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        #sidebar_layout.addLayout(title_infos_layout)
+
+        #infos_label = QLabel("Données sur l'image")
+        #infos_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        #title_infos_layout.addWidget(infos_label)
+
+        #self.data_xlabel = QLabel()
+        #self.data_xlabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        #sidebar_layout.addWidget(self.data_xlabel)
+
+        #self.data_ylabel = QLabel()
+        #self.data_ylabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        #sidebar_layout.addWidget(self.data_ylabel)
+
+        #self.ant_radar = QLabel()
+        #self.ant_radar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        #sidebar_layout.addWidget(self.ant_radar)
         
         sidebar_layout.addStretch()
 
