@@ -77,8 +77,8 @@ class MainWindow():
 
         self.Xunit = ["Distance", "Temps", "Traces"]
         self.Yunit = ["Profondeur", "Temps", "Samples"]
-        self.Xlabel = ["Distance en m", "Temps en s", "Traces"]
-        self.Ylabel = ["Profondeur en m", "Temps en ns", "Samples"]
+        self.Xlabel = ["Distance (m)", "Temps (s)", "Traces"]
+        self.Ylabel = ["Profondeur (m)", "Temps (ns)", "Samples"]
         self.xLabel = ["m", "s", "mesures"]
         self.yLabel = ["m", "ns", "samples"]
 
@@ -173,7 +173,6 @@ class MainWindow():
         # Définir la taille limite du radargramme
         self.radargram_widget.setMinimumWidth(600)
         self.radargram_widget.setMinimumHeight(min_height)
-
 
         #Scope
         self.scope_widget = QWidget()
