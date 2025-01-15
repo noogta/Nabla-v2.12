@@ -246,6 +246,7 @@ class MainWindow():
             if self.file_path == "":
                 print("Aucune image n'a encore été définie")
             else:
+                self.QCanvas.Pointer.clear(self.axes)
                 file_save_path, _ = QFileDialog.getSaveFileName(self.window, "Sauvegarder l'image", "", "PNG files (*.png);;JPEG files (*.jpeg)")
                 if file_save_path:
                     self.figure.savefig(file_save_path)
@@ -256,6 +257,7 @@ class MainWindow():
     
     def save_all(self):
         try:
+            self.QCanvas.Pointer.clear(self.axes)
             folder_path = QFileDialog.getExistingDirectory(self.window, "Sauvegarde des images")
             files = [self.listbox_files.item(row).text() for row in range(self.listbox_files.count())]
             prec_selected_file = self.selected_file

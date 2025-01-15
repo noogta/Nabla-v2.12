@@ -257,7 +257,7 @@ class Canvas:
         print(self.parent.abs_unit.currentText())
         print(self.parent.feature)
  
-class Pointer:
+class Pointer: #------> Pointeur 
     def __init__(self, x: None | float, y: None | float, parent):
         self.x = x
         self.y = y
@@ -270,23 +270,26 @@ class Pointer:
         self.x = x
         self.y = y
 
-    def plot(self, axes):
+    def plot(self, axes): 
         xindex = self.parent.Xunit.index(self.parent.abs_unit.currentText())
         yindex = self.parent.Yunit.index(self.parent.ord_unit.currentText())
         self.parent.xpointer_label.setText("{:.2f} {}".format(self.x, self.parent.xLabel[xindex]))
         self.parent.ypointer_label.setText("{:.2f} {}".format(self.y, self.parent.yLabel[yindex]))
 
-        if(self.vline != None and self.hline != None):
-            axes.lines.pop()
-            axes.lines.pop()
-        self.vline = axes.plot([self.x, self.x], [self.y - 0.15, self.y + 0.15], color='red', linewidth=1)
-        self.hline = axes.plot([self.x - 0.15, self.x + 0.15], [self.y, self.y], color='red', linewidth=1)
+        if(self.vline != None and self.hline != None): #Delete si déjà existant
+            axes.lines[0].remove()
+            axes.lines[0].remove()
 
-    def clear(self, axes):
+        #self.vline = axes.plot([self.x, self.x], [0, self.y + 0.15], color='green', linewidth=0.5)
+        self.vline = axes.axvline(self.x, color='green', linewidth=1)
+        #self.hline = axes.plot([0, self.x + 0.15], [self.y, self.y], color='green', linewidth=0.5)
+        self.hline = axes.axhline(self.y, color='green', linewidth=1)
+    
+    def clear(self, _axes):
         if(self != None):
             if(self.vline != None and self.hline != None):
-                axes.lines.pop()
-                axes.lines.pop()
+                _axes.lines[0].remove()
+                _axes.lines[0].remove()
                 self.vline = None
                 self.hline = None
             self.parent.xpointer_label.setText("")
