@@ -39,6 +39,7 @@ class MainWindow():
         #self.center_window()
 
         # Affichage du Menu
+
         self.ext_list = [".rd7", ".rd3", ".DZT",".dzt"]
         self.freq_state = ["Filtrage désactivé", "Haute Fréquence", "Basse Fréquence"]
         self.flex_antenna = ["Parralle","Perpendiculaire"]
@@ -50,6 +51,7 @@ class MainWindow():
 
         # Initialisation du Canvas
         self.figure = Figure(figsize=(12, 8), facecolor='none')
+        self.scope = Figure(figsize=(12, 8), facecolor='none')
         self.axes = self.figure.add_subplot(1,1,1)
         self.QCanvas = Canvas(self.figure, self.axes, self)
 
@@ -80,6 +82,8 @@ class MainWindow():
         self.xLabel = ["m", "s", "mesures"]
         self.yLabel = ["m", "ns", "samples"]
 
+        self.grille_radar = QCheckBox()
+        self.interpolations = ["nearest","gaussian","none","bilinear"]
         self.selected_file = None
 
         self.radargram()
@@ -170,10 +174,18 @@ class MainWindow():
         self.radargram_widget.setMinimumWidth(600)
         self.radargram_widget.setMinimumHeight(min_height)
 
+
+        #Scope
+        self.scope_widget = QWidget()
+        self.scope_widget.setMinimumWidth(200)
+        self.scope_widget.setMaximumWidth(200)
+        self.scope_widget.setMinimumHeight(min_height)
+
         # Layout horizontal pour placer le sidebar et le radargramm côte à côte
         contents_layout = QHBoxLayout()
         contents_layout.addWidget(self.sidebar_widget)
         contents_layout.addWidget(self.radargram_widget)
+        contents_layout.addWidget(self.scope_widget)
         main_layout.addLayout(contents_layout)
 
     def open_folder(self):
@@ -808,6 +820,7 @@ class MainWindow():
 
         self.sub_mean_entry.editingFinished.connect(lambda: self.update_img(self.t0_lin_value,self.t0_exp_value, self.gain_const_value, self.gain_lin_value, self.gain_exp_value, self.cb_value, self.ce_value, update_sub_mean(), self.cutoff_value, self.sampling_value))
 
+#AJouter Le passe haut
         low_pass_layout = QVBoxLayout()
         ft_layout.addLayout(low_pass_layout)
 
@@ -890,20 +903,6 @@ class MainWindow():
         self.eq_button.clicked.connect(self.equalization)
         tools_layout.addWidget(self.eq_button)
 
-        pointer_layout = QHBoxLayout()
-        ft_layout.addLayout(pointer_layout)
-
-        pointer_label = QLabel("Pointeur:")
-        pointer_layout.addWidget(pointer_label)
-
-        data_pointer_layout = QVBoxLayout()
-        pointer_layout.addLayout(data_pointer_layout)
-
-        self.xpointer_label = QLabel()
-        self.ypointer_label = QLabel()
-        data_pointer_layout.addWidget(self.xpointer_label)
-        data_pointer_layout.addWidget(self.ypointer_label)
-
         ######### Analyse #########
         analyze_wid_ntb = QWidget()
         notebook.addTab(analyze_wid_ntb, "Analyse")
@@ -951,7 +950,7 @@ class MainWindow():
         ######### Données #########
 
         data_wid_ntb = QWidget()
-        notebook.addTab(data_wid_ntb, "Data")
+        notebook.addTab(data_wid_ntb, "Infos")
 
         data_layout = QVBoxLayout(data_wid_ntb)
         data_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -976,7 +975,64 @@ class MainWindow():
         self.ant_radar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         data_layout.addWidget(self.ant_radar)
 
-# a convertir pour afficher le pointeur
+        title_affichage_layout = QHBoxLayout()
+        data_layout.addLayout(title_affichage_layout)
+        title_affichage_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        title_affichage_label = QLabel("Affichage scan")
+        title_affichage_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
+        title_affichage_layout.addWidget(title_affichage_label)
+
+        #Check box affichage grille
+        grille_layout = QHBoxLayout()
+        data_layout.addLayout(grille_layout)
+
+        grille_class_layout = QHBoxLayout()
+        class_layout.addLayout(grille_class_layout)
+
+        grille_label = QLabel("Grille")
+        grille_layout.addWidget(grille_label)
+
+        X_grille_label = QLabel("X:")
+        grille_layout.addWidget(X_grille_label)
+        
+        self.grille_radar_X = QCheckBox()
+        grille_layout.addWidget(self.grille_radar_X)
+
+        Y_grille_label = QLabel("Y:")
+        grille_layout.addWidget(Y_grille_label)
+
+        self.grille_radar_Y = QCheckBox()
+        grille_layout.addWidget(self.grille_radar_Y)
+
+        #Nbr de tick
+        tick_layout = QHBoxLayout()
+        data_layout.addLayout(tick_layout)
+
+        nb_tick_class_layout = QHBoxLayout()
+        class_layout.addLayout(nb_tick_class_layout)
+
+        nb_tick_label = QLabel("Nbre tick")
+        tick_layout.addWidget(nb_tick_label)
+        
+        self.nb_tick_text = QLineEdit()
+        self.nb_tick_text.setText("20")
+        tick_layout.addWidget(self.nb_tick_text)
+
+        #Interpolation
+        interpolation_layout = QHBoxLayout()
+        data_layout.addLayout(interpolation_layout)
+
+        interpolation_class_layout = QHBoxLayout()
+        class_layout.addLayout(interpolation_class_layout)
+
+        interpolation_label = QLabel("Interpolation")
+        interpolation_layout.addWidget(interpolation_label)
+        
+        self.interpolation_text = QComboBox()
+        self.interpolation_text.addItems(self.interpolations)
+        interpolation_layout.addWidget(self.interpolation_text)
+
 
 
 #Pointeur (a ajouter boutton pour afficher scope)
@@ -991,8 +1047,8 @@ class MainWindow():
         pointer_layout = QHBoxLayout()
         pointer_infos_layout.addLayout(pointer_layout)
 
-        pointer_label = QLabel("Pointeur:")
-        pointer_layout.addWidget(pointer_label)
+        #pointer_label = QLabel("Pointeur:")
+        #pointer_layout.addWidget(pointer_label)
 
         data_pointer_layout = QVBoxLayout()
         pointer_layout.addLayout(data_pointer_layout)
@@ -1002,26 +1058,10 @@ class MainWindow():
         data_pointer_layout.addWidget(self.xpointer_label)
         data_pointer_layout.addWidget(self.ypointer_label)
 
-        #title_infos_layout = QVBoxLayout()
-        #title_infos_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        #sidebar_layout.addLayout(title_infos_layout)
+        #scope_affichage = QPushButton("Afficher le scope")
+        #scope_affichage.clicked.connect(lambda: self.QCanvas.set_mode("Rectangle", scope_affichage))
+        #data_pointer_layout.addWidget(scope_affichage)
 
-        #infos_label = QLabel("Données sur l'image")
-        #infos_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
-        #title_infos_layout.addWidget(infos_label)
-
-        #self.data_xlabel = QLabel()
-        #self.data_xlabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        #sidebar_layout.addWidget(self.data_xlabel)
-
-        #self.data_ylabel = QLabel()
-        #self.data_ylabel.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        #sidebar_layout.addWidget(self.data_ylabel)
-
-        #self.ant_radar = QLabel()
-        #self.ant_radar.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        #sidebar_layout.addWidget(self.ant_radar)
-        
         sidebar_layout.addStretch()
 
     def select_file(self):
@@ -1224,6 +1264,22 @@ class MainWindow():
         self.axes.set_axis_off()
 
 
+    def scope(self):
+        layout = QVBoxLayout(self.scope_widget)
+
+        self.canvas_scop = self.QCanvas.canvas
+        layout.addWidget(self.canvas_scop)
+
+        # Initialisation des axes x et y
+            # Réglages des axes
+            # Déplacer l'axe des abscisses vers le haut
+        self.axes_scope.xaxis.set_ticks_position('top')
+        self.axes_scope.xaxis.set_label_position('top')
+        self.axes_scope.yaxis.set_ticks_position('left')
+        self.axes_scope.yaxis.set_label_position('left')
+
+        self.axes_scope.set_axis_off()
+       
     def update_img(self, t0_lin: int, t0_exp: int, g: float, a_lin: float, a: float, cb: float, ce: float, sub, cutoff: float, sampling: float):
         """
         Méthode qui met à jour notre image avec les différentes applications possibles.
@@ -1302,7 +1358,16 @@ class MainWindow():
             # Ajouter un titre à la figure
             self.figure.suptitle(self.selected_file[:-4], y=0.05, va="bottom")
 
-            self.axes.imshow(self.img_modified, cmap="gray", interpolation="nearest", aspect="auto", extent = [X[0],X[-1],Y[-1], Y[0]])
+            self.axes.imshow(self.img_modified, cmap="gray", interpolation=self.interpolation_text.currentData(), aspect="auto", extent = [X[0],X[-1],Y[-1], Y[0]])
+            
+            if(self.grille_radar_Y.isChecked()):
+                self.axes.grid(visible=self.grille_radar_Y.isChecked(), axis='y',linewidth = 0.5, color = "black", linestyle ='-.')
+            if(self.grille_radar_X.isChecked()):
+                self.axes.grid(visible=self.grille_radar.isChecked(), axis='x',linewidth = 0.5, color = "black", linestyle ='-.')
+
+            self.axes.locator_params(axis='y', nbins=int(self.nb_tick_text.text()))
+            self.axes.locator_params(axis='x', nbins=int(self.nb_tick_text.text()))
+
             self.update_scale_labels(epsilon)
             self.prec_abs = self.abs_unit.currentText()
             self.prec_ord = self.ord_unit.currentText()
