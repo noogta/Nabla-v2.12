@@ -13,13 +13,16 @@ CURSOR_DRAW = Qt.CursorShape.CrossCursor
 CURSOR_MOVE = Qt.CursorShape.ClosedHandCursor
 CURSOR_GRAB = Qt.CursorShape.OpenHandCursor
 
+#Ajouter les lignes
+
 class Canvas:
-    def __init__(self, figure: Figure, axes, parent):
+    def __init__(self, figure: Figure, axes, parent, scope_axes=None, scopeFigure:Figure = None):
         self.canvas = FigureCanvas(figure)
+        self.canvasScope = FigureCanvas(scopeFigure)
         self.canvas.setStyleSheet("background-color: transparent;")
         self.axes = axes
         self.parent = parent
-        
+        self.axes_scope = scope_axes
         self.Pointer = Pointer(None, None, self.parent)
         self.Point = None
         self.Rectangle = None
@@ -62,9 +65,12 @@ class Canvas:
             if x is not None and y is not None:
                 if(self.mode == "Pointer"):
                     self.Pointer.set(x, y)
-                    self.Pointer.plot(self.axes)
-
+                    self.parent.pt.setText(str(int(y)))
+                    self.parent.plot_scope()
+                    self.Pointer.plot(self.axes,self.axes_scope)
                     self.canvas.draw()
+                    self.canvasScope.draw()
+                    
                 else:
                     if(self.mode == "Rectangle"):
                         # Sauvegarder le fond de la toile pour utiliser blit
@@ -200,7 +206,7 @@ class Canvas:
         #print("Après Suppression:")
         #self.test_list()
 
-    def export_json(self):
+    def export_json(self): #A débug ? 
         n_tr = self.parent.feature[0]
         n_samp = self.parent.feature[1]
         if(self.parent.def_value != None):
@@ -265,12 +271,13 @@ class Pointer: #------> Pointeur
 
         self.vline = None
         self.hline = None
+        self.hlineS = None
 
     def set(self, x: float, y: float):
         self.x = x
         self.y = y
 
-    def plot(self, axes): 
+    def plot(self, axes, axes_scope=None ): 
         xindex = self.parent.Xunit.index(self.parent.abs_unit.currentText())
         yindex = self.parent.Yunit.index(self.parent.ord_unit.currentText())
         self.parent.xpointer_label.setText("{:.2f} {}".format(self.x, self.parent.xLabel[xindex]))
@@ -279,12 +286,17 @@ class Pointer: #------> Pointeur
         if(self.vline != None and self.hline != None): #Delete si déjà existant
             axes.lines[0].remove()
             axes.lines[0].remove()
+            
+        #if(self.hlineS != None):
+            #axes_scope.line[0].remove()
 
         #self.vline = axes.plot([self.x, self.x], [0, self.y + 0.15], color='green', linewidth=0.5)
-        self.vline = axes.axvline(self.x, color='green', linewidth=1)
+        self.vline = axes.axvline(self.x, color='red', linewidth=1)
         #self.hline = axes.plot([0, self.x + 0.15], [self.y, self.y], color='green', linewidth=0.5)
-        self.hline = axes.axhline(self.y, color='green', linewidth=1)
-    
+        self.hline = axes.axhline(self.y, color='red', linewidth=1)
+        if(axes_scope != None):
+            self.hlineS = axes_scope.axhline(self.y, color='red', linewidth=1)
+
     def clear(self, _axes):
         if(self != None):
             if(self.vline != None and self.hline != None):

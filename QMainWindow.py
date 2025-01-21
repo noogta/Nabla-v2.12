@@ -51,10 +51,11 @@ class MainWindow():
 
         # Initialisation du Canvas
         self.figure = Figure(figsize=(12, 8), facecolor='none')
-        self.scope = Figure(figsize=(12, 8), facecolor='none')
+        self.scope_figure = Figure(figsize=(1, 1), facecolor='none')
         self.axes = self.figure.add_subplot(1,1,1)
-        self.QCanvas = Canvas(self.figure, self.axes, self)
-
+        self.axes_scope = self.scope_figure.add_subplot(1,1,1)
+        self.QCanvas = Canvas(self.figure, self.axes, self,self.axes_scope,self.scope_figure)
+        self.QCanvas_scope = Canvas(self.scope_figure,self.axes_scope,self)
         self.menu()
         self.main_block()
 
@@ -176,8 +177,7 @@ class MainWindow():
 
         #Scope
         self.scope_widget = QWidget()
-        self.scope_widget.setMinimumWidth(200)
-        self.scope_widget.setMaximumWidth(200)
+        self.scope_widget.setFixedWidth(200)
         self.scope_widget.setMinimumHeight(min_height)
 
         # Layout horizontal pour placer le sidebar et le radargramm côte à côte
@@ -1058,10 +1058,15 @@ class MainWindow():
         self.ypointer_label = QLabel()
         data_pointer_layout.addWidget(self.xpointer_label)
         data_pointer_layout.addWidget(self.ypointer_label)
+        
+        scope_affichage = QPushButton("Actualiser le scope")
+        scope_affichage.clicked.connect(lambda: self.plot_scope())
+        data_pointer_layout.addWidget(scope_affichage)
 
-        #scope_affichage = QPushButton("Afficher le scope")
-        #scope_affichage.clicked.connect(lambda: self.QCanvas.set_mode("Rectangle", scope_affichage))
-        #data_pointer_layout.addWidget(scope_affichage)
+        self.pt = QLineEdit()
+        self.pt.setText("10")
+        data_pointer_layout.addWidget(self.pt)
+
 
         sidebar_layout.addStretch()
 
@@ -1263,23 +1268,6 @@ class MainWindow():
         self.axes.yaxis.set_label_position('left')
 
         self.axes.set_axis_off()
-
-
-    def scope(self):
-        layout = QVBoxLayout(self.scope_widget)
-
-        self.canvas_scop = self.QCanvas.canvas
-        layout.addWidget(self.canvas_scop)
-
-        # Initialisation des axes x et y
-            # Réglages des axes
-            # Déplacer l'axe des abscisses vers le haut
-        self.axes_scope.xaxis.set_ticks_position('top')
-        self.axes_scope.xaxis.set_label_position('top')
-        self.axes_scope.yaxis.set_ticks_position('left')
-        self.axes_scope.yaxis.set_label_position('left')
-
-        self.axes_scope.set_axis_off()
        
     def update_img(self, t0_lin: int, t0_exp: int, g: float, a_lin: float, a: float, cb: float, ce: float, sub, cutoff: float, sampling: float):
         """
@@ -1366,7 +1354,7 @@ class MainWindow():
             if(self.grille_radar_X.isChecked()):
                 self.axes.grid(visible=self.grille_radar.isChecked(), axis='x',linewidth = 0.5, color = "black", linestyle ='-.')
 
-            self.axes.locator_params(axis='y', nbins=int(self.nb_tick_text.text()))
+            self.axes.locator_params(axis='y', nbins=int(self.nb_tick_text.text())) #Def tick 
             self.axes.locator_params(axis='x', nbins=int(self.nb_tick_text.text()))
 
             self.update_scale_labels(epsilon)
@@ -1544,8 +1532,116 @@ class MainWindow():
 
     def reset_style(self, ledit):
         ledit.setStyleSheet("")
+    
+    def plot_scope(self):
+        if(self.def_value != None):
+            dist = self.def_value
+        else:
+            dist = self.feature[2]
+        epsilon = self.epsilon
 
+        n_tr = self.feature[0]
+        n_samp = self.feature[1]
+        d_max = self.feature[2]
+        t_max = self.feature[3]
+        p_max = (t_max * 10.**(-9)) * (cste_global["c_lum"] / sqrt(epsilon)) / 2
+        step_time = self.feature[5]
+
+        xindex = self.Xunit.index(self.abs_unit.currentText())
+        yindex = self.Yunit.index(self.ord_unit.currentText())
+        L_xmult = [d_max / n_tr, step_time, 1]
+        L_ymult = [p_max / n_samp, t_max / n_samp, 1]
+        L_xmax = [d_max, step_time*n_tr, n_tr]
+
+        X = []
+        Y = []
+
+        if(self.equal_state == "on"):
+            X = np.linspace(0.,self.max_tr * L_xmult[xindex],10)
+            #self.axes.set_xlabel(self.Xlabel[xindex])
+            Y = np.linspace(0, (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
+            #self.axes.set_ylabel(self.Ylabel[yindex])
+        else:
+            if(dist != None and self.abs_unit.currentText() == "Distance"):
+                X = np.linspace(0.,dist,10)
+                #self.axes.set_xlabel(self.Xlabel[xindex])
+            else:
+                X = np.linspace(0.,L_xmax[xindex],10)
+                #self.axes.set_xlabel(self.Xlabel[xindex])
+            Y = np.linspace(0., (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
+            #self.axes.set_ylabel(self.Ylabel[yindex])
+
+        layout_scope = QVBoxLayout(self.scope_widget)
+
+        self.canvas_scope = self.QCanvas_scope.canvas
+        layout_scope.addWidget(self.canvas_scope)
+
+        self.scope_figure.clear()
+        self.axes_scope = self.scope_figure.add_subplot(111)
+        self.scope_figure.set_facecolor('white')
+
+        self.axes_scope.set_xlabel("")
+        self.axes_scope.set_ylabel("")
+
+        self.axes_scope.xaxis.set_ticks_position('top')
+        self.axes_scope.xaxis.set_label_position('top')
+        self.axes_scope.yaxis.set_ticks_position('none') 
+
+        index_scope = int(self.pt.text())
         
+        self.img_modified2 = self.img_modified[:,index_scope]
+
+        y = np.arange(Y[0],Y[-1],(Y[-1]-Y[0])/(len(self.img_modified2)))   #Set y values 
+        y1 = np.linspace(start=0.,stop=(self.ce_value - self.cb_value) * L_ymult[yindex],num=len(self.img_modified2))
+        self.axes_scope.plot(self.img_modified2,y1)
+
+        self.axes_scope.set_xlim(xmin= -5000000000, xmax=5000000000) #Bornes axes 
+        self.axes_scope.set_ylim(ymin=min(y), ymax= max(y))
+        self.axes_scope.invert_yaxis()
+
+        self.axes_scope.axvline(0, color='black', linewidth=1) #Trait au milieu de déco
+        
+        self.canvas_scope.draw()
+
+    def getPosXY(self):
+        if(self.def_value != None):
+            dist = self.def_value
+        else:
+            dist = self.feature[2]
+        epsilon = self.epsilon
+
+        n_tr = self.feature[0]
+        n_samp = self.feature[1]
+        d_max = self.feature[2]
+        t_max = self.feature[3]
+        p_max = (t_max * 10.**(-9)) * (cste_global["c_lum"] / sqrt(epsilon)) / 2
+        step_time = self.feature[5]
+
+        xindex = self.Xunit.index(self.abs_unit.currentText())
+        yindex = self.Yunit.index(self.ord_unit.currentText())
+        L_xmult = [d_max / n_tr, step_time, 1]
+        L_ymult = [p_max / n_samp, t_max / n_samp, 1]
+        L_xmax = [d_max, step_time*n_tr, n_tr]
+
+        X = []
+        Y = []
+
+        if(self.equal_state == "on"):
+            X = np.linspace(0.,self.max_tr * L_xmult[xindex],10)
+            #self.axes.set_xlabel(self.Xlabel[xindex])
+            Y = np.linspace(0, (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
+            #self.axes.set_ylabel(self.Ylabel[yindex])
+        else:
+            if(dist != None and self.abs_unit.currentText() == "Distance"):
+                X = np.linspace(0.,dist,10)
+                #self.axes.set_xlabel(self.Xlabel[xindex])
+            else:
+                X = np.linspace(0.,L_xmax[xindex],10)
+                #self.axes.set_xlabel(self.Xlabel[xindex])
+            Y = np.linspace(0., (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
+            #self.axes.set_ylabel(self.Ylabel[yindex])
+
+
 if __name__ == '__main__':
     software_name = "NablaPy"
     main_window = MainWindow(software_name)

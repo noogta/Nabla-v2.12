@@ -18,10 +18,10 @@ class Point:
     
     def create_point(self):
         if(self.label == ""):
-            self.point = plt.Circle((self.x, self.y), radius=0.075, color='black', alpha = 1)
+            self.point = plt.Circle((self.x, self.y), radius=0.0075, color='black', alpha = 1)
         else:
             if(self.label in color):
-                self.point = plt.Circle((self.x, self.y), radius=0.075, color=color[self.label], alpha = 1)
+                self.point = plt.Circle((self.x, self.y), radius=0.0075, color=color[self.label], alpha = 1)
 
     def update_point(self, x: float, y: float):
         # Mise à jour des coordonnées
