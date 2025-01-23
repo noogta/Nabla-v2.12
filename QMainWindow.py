@@ -9,7 +9,7 @@ from RadarData import RadarData, cste_global
 from QCanvas import Canvas
 from math import sqrt, floor
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QPushButton, QComboBox, QLineEdit, QTabWidget, QCheckBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame, QListWidget, QPushButton, QComboBox, QLineEdit, QTabWidget, QCheckBox, QSlider
 from PyQt6.QtGui import QAction, QFont
 from matplotlib.figure import Figure
 
@@ -56,8 +56,12 @@ class MainWindow():
         self.axes_scope = self.scope_figure.add_subplot(1,1,1)
         self.QCanvas = Canvas(self.figure, self.axes, self,self.axes_scope,self.scope_figure)
         self.QCanvas_scope = Canvas(self.scope_figure,self.axes_scope,self)
+        self.lineScope = None
         self.menu()
         self.main_block()
+
+        self.vmin = -5e9
+        self.vmax = 5e9
 
         self.gain_const_value = 1.
         self.gain_lin_value = 0.
@@ -309,6 +313,9 @@ class MainWindow():
             print("Erreur lors de la sauvegarde des images.")
             traceback.print_exc()
 
+    
+
+
     def export_nones(self):
         try:
             files = [self.listbox_files.item(row).text() for row in range(self.listbox_files.count())]
@@ -392,7 +399,7 @@ class MainWindow():
         list_layout.addWidget(self.inv_list_button)
 
         # Deuxième bloc: Affichage
-        display_frame = QFrame()
+        display_frame = QFrame() 
         sidebar_layout.addWidget(display_frame)
 
         display_layout = QVBoxLayout(display_frame)
@@ -404,14 +411,34 @@ class MainWindow():
         display_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))  # Use QFont to set the font
         title_display_layout.addWidget(display_label)
 
+        contraste_layout = QHBoxLayout()
+        display_layout.addLayout(contraste_layout)
+
+        contraste_label = QLabel("Contraste")
+        contraste_layout.addWidget(contraste_label)
+
+        self.slider = QSlider(Qt.Orientation.Horizontal)
+        self.slider.setGeometry(50,50, 200, 50)
+        self.slider.setRange(1, 100)
+        self.slider.setValue(100)  # Commencer à 100
+        self.slider.setTickInterval(1)
+        self.slider.setInvertedAppearance(True)  # Inverser l'apparence pour que 100 soit en haut
+        contraste_layout.addWidget(self.slider)
+
+        self.slider.valueChanged.connect(lambda: self.update_img(self.t0_lin_value,self.t0_exp_value, self.gain_const_value, update_gain_lin_value(), self.gain_exp_value, self.cb_value, self.ce_value, self.sub_mean_value, self.cutoff_value, self.sampling_value))
+
+
+        unit_abs_layout = QHBoxLayout()
+        display_layout.addLayout(unit_abs_layout)
+
         abs_label = QLabel("Unité en abscisse")
-        display_layout.addWidget(abs_label)
+        unit_abs_layout.addWidget(abs_label)
 
         self.abs_unit = QComboBox()
         self.abs_unit.addItems(["Distance", "Temps", "Traces"])
         self.abs_unit.setCurrentText("Distance")
         self.abs_unit.currentTextChanged.connect(lambda: self.update_axes(self.def_value, self.epsilon))
-        display_layout.addWidget(self.abs_unit)
+        unit_abs_layout.addWidget(self.abs_unit)
 
         def_layout = QHBoxLayout()
         display_layout.addLayout(def_layout)
@@ -442,14 +469,17 @@ class MainWindow():
             
         self.def_entry.editingFinished.connect(lambda: self.update_axes(update_def_value(), self.epsilon))
 
+        unit_profondeur_layout = QHBoxLayout()
+        display_layout.addLayout(unit_profondeur_layout)
+
         ord_label = QLabel("Unité en ordonnée")
-        display_layout.addWidget(ord_label)
+        unit_profondeur_layout.addWidget(ord_label)
 
         self.ord_unit = QComboBox()
         self.ord_unit.addItems(["Profondeur", "Temps", "Samples"])
         self.ord_unit.setCurrentText("Profondeur")
         self.ord_unit.currentTextChanged.connect(lambda: self.update_axes(self.def_value, self.epsilon))
-        display_layout.addWidget(self.ord_unit)
+        unit_profondeur_layout.addWidget(self.ord_unit)
 
         
         epsilon_layout = QHBoxLayout()
@@ -999,12 +1029,14 @@ class MainWindow():
         
         self.grille_radar_X = QCheckBox()
         grille_layout.addWidget(self.grille_radar_X)
+        self.grille_radar_X.clicked.connect(lambda: self.update_axes(self.def_value, self.epsilon))
 
         Y_grille_label = QLabel("Y:")
         grille_layout.addWidget(Y_grille_label)
 
         self.grille_radar_Y = QCheckBox()
         grille_layout.addWidget(self.grille_radar_Y)
+        self.grille_radar_Y.clicked.connect(lambda: self.update_axes(self.def_value, self.epsilon))
 
         #Nbr de tick
         tick_layout = QHBoxLayout()
@@ -1019,7 +1051,7 @@ class MainWindow():
         self.nb_tick_text = QLineEdit()
         self.nb_tick_text.setText("20")
         tick_layout.addWidget(self.nb_tick_text)
-
+        self.nb_tick_text.editingFinished.connect(lambda: self.update_axes(self.def_value, self.epsilon))
         #Interpolation
         interpolation_layout = QHBoxLayout()
         data_layout.addLayout(interpolation_layout)
@@ -1033,10 +1065,10 @@ class MainWindow():
         self.interpolation_text = QComboBox()
         self.interpolation_text.addItems(self.interpolations)
         interpolation_layout.addWidget(self.interpolation_text)
+        self.interpolation_text.editTextChanged.connect(lambda: self.update_axes(self.def_value, self.epsilon))
 
 
-
-#Pointeur (a ajouter boutton pour afficher scope)
+#Pointeur 
         pointer_infos_layout = QVBoxLayout()
         pointer_infos_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         sidebar_layout.addLayout(pointer_infos_layout)
@@ -1059,17 +1091,29 @@ class MainWindow():
         data_pointer_layout.addWidget(self.xpointer_label)
         data_pointer_layout.addWidget(self.ypointer_label)
         
-        scope_affichage = QPushButton("Actualiser le scope")
-        scope_affichage.clicked.connect(lambda: self.plot_scope())
-        data_pointer_layout.addWidget(scope_affichage)
+        # scope_affichage = QPushButton("Actualiser le scope")
+        # scope_affichage.clicked.connect(lambda: self.plot_scope())
+        # data_pointer_layout.addWidget(scope_affichage)
 
-        self.pt = QLineEdit()
-        self.pt.setText("10")
-        data_pointer_layout.addWidget(self.pt)
+        # self.pt = QLineEdit()
+        # self.pt.setText("10")
+        # data_pointer_layout.addWidget(self.pt)
 
 
         sidebar_layout.addStretch()
 
+    def getRangePlot(self):
+        """
+        Calcul vmin et vmax en fonction du quotient de contraste
+        return min, max
+        """
+        q = self.slider.value()/100
+
+        min = self.vmin*q
+        max = self.vmax*q
+
+        return min, max
+    
     def select_file(self):
         """
     Méthode permettant de sélectionner un fichier dans la liste des fichiers.
@@ -1313,7 +1357,7 @@ class MainWindow():
         try:
             self.update_canvas_image()
 
-            n_tr = self.feature[0]
+            n_tr = self.feature[0] ### ----------------------------------------___> A suppr 
             n_samp = self.feature[1]
             d_max = self.feature[2]
             t_max = self.feature[3]
@@ -1346,8 +1390,7 @@ class MainWindow():
 
             # Ajouter un titre à la figure
             self.figure.suptitle(self.selected_file[:-4], y=0.05, va="bottom")
-
-            self.axes.imshow(self.img_modified, cmap="gray", interpolation=self.interpolation_text.currentData(), aspect="auto", extent = [X[0],X[-1],Y[-1], Y[0]])
+            self.axes.imshow(self.img_modified, cmap="gray", interpolation=self.interpolation_text.currentData(), aspect="auto", extent = [X[0],X[-1],Y[-1], Y[0]],vmin=self.getRangePlot()[0], vmax= self.getRangePlot()[1])
             
             if(self.grille_radar_Y.isChecked()):
                 self.axes.grid(visible=self.grille_radar_Y.isChecked(), axis='y',linewidth = 0.5, color = "black", linestyle ='-.')
@@ -1534,43 +1577,6 @@ class MainWindow():
         ledit.setStyleSheet("")
     
     def plot_scope(self):
-        if(self.def_value != None):
-            dist = self.def_value
-        else:
-            dist = self.feature[2]
-        epsilon = self.epsilon
-
-        n_tr = self.feature[0]
-        n_samp = self.feature[1]
-        d_max = self.feature[2]
-        t_max = self.feature[3]
-        p_max = (t_max * 10.**(-9)) * (cste_global["c_lum"] / sqrt(epsilon)) / 2
-        step_time = self.feature[5]
-
-        xindex = self.Xunit.index(self.abs_unit.currentText())
-        yindex = self.Yunit.index(self.ord_unit.currentText())
-        L_xmult = [d_max / n_tr, step_time, 1]
-        L_ymult = [p_max / n_samp, t_max / n_samp, 1]
-        L_xmax = [d_max, step_time*n_tr, n_tr]
-
-        X = []
-        Y = []
-
-        if(self.equal_state == "on"):
-            X = np.linspace(0.,self.max_tr * L_xmult[xindex],10)
-            #self.axes.set_xlabel(self.Xlabel[xindex])
-            Y = np.linspace(0, (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
-            #self.axes.set_ylabel(self.Ylabel[yindex])
-        else:
-            if(dist != None and self.abs_unit.currentText() == "Distance"):
-                X = np.linspace(0.,dist,10)
-                #self.axes.set_xlabel(self.Xlabel[xindex])
-            else:
-                X = np.linspace(0.,L_xmax[xindex],10)
-                #self.axes.set_xlabel(self.Xlabel[xindex])
-            Y = np.linspace(0., (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
-            #self.axes.set_ylabel(self.Ylabel[yindex])
-
         layout_scope = QVBoxLayout(self.scope_widget)
 
         self.canvas_scope = self.QCanvas_scope.canvas
@@ -1587,23 +1593,32 @@ class MainWindow():
         self.axes_scope.xaxis.set_label_position('top')
         self.axes_scope.yaxis.set_ticks_position('none') 
 
-        index_scope = int(self.pt.text())
+        pos = self.getPosXY(lenY=len(self.img_modified),
+                            lenX = len(self.img_modified[1]))
+        index_proche = np.argmin(np.abs(pos[0] - self.QCanvas.getXPointeur()))
         
-        self.img_modified2 = self.img_modified[:,index_scope]
+        self.img_modified2 = self.img_modified[:,index_proche]
 
-        y = np.arange(Y[0],Y[-1],(Y[-1]-Y[0])/(len(self.img_modified2)))   #Set y values 
-        y1 = np.linspace(start=0.,stop=(self.ce_value - self.cb_value) * L_ymult[yindex],num=len(self.img_modified2))
-        self.axes_scope.plot(self.img_modified2,y1)
+        self.axes_scope.plot(self.img_modified2,pos[1])
 
-        self.axes_scope.set_xlim(xmin= -5000000000, xmax=5000000000) #Bornes axes 
-        self.axes_scope.set_ylim(ymin=min(y), ymax= max(y))
+        self.axes_scope.set_xlim(xmin= self.getRangePlot()[0], xmax=self.getRangePlot()[1]) #Bornes axes 
+        self.axes_scope.set_ylim(ymin=min(pos[1]), ymax= max(pos[1]))
         self.axes_scope.invert_yaxis()
 
         self.axes_scope.axvline(0, color='black', linewidth=1) #Trait au milieu de déco
         
+        if(self.lineScope != None):  # POsition pointeur sur scope
+            self.axes_scope.lines[0].remove()
+            self.axes_scope.lines[0].remove()
+        self.axes_scope.axhline(self.QCanvas.getYPointeur(), color='red', linewidth=1)
+
         self.canvas_scope.draw()
 
-    def getPosXY(self):
+    def getPosXY(self, lenX:int = 10, lenY:int = 10):
+        """
+            Calcul les axes X, Y du radargramm
+            Retourne X, Y
+        """
         if(self.def_value != None):
             dist = self.def_value
         else:
@@ -1627,20 +1642,16 @@ class MainWindow():
         Y = []
 
         if(self.equal_state == "on"):
-            X = np.linspace(0.,self.max_tr * L_xmult[xindex],10)
-            #self.axes.set_xlabel(self.Xlabel[xindex])
-            Y = np.linspace(0, (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
-            #self.axes.set_ylabel(self.Ylabel[yindex])
+            X = np.linspace(0.,self.max_tr * L_xmult[xindex],lenX)
+            Y = np.linspace(0, (self.ce_value - self.cb_value) * L_ymult[yindex], lenY)
         else:
             if(dist != None and self.abs_unit.currentText() == "Distance"):
-                X = np.linspace(0.,dist,10)
-                #self.axes.set_xlabel(self.Xlabel[xindex])
+                X = np.linspace(0.,dist,lenX)
             else:
-                X = np.linspace(0.,L_xmax[xindex],10)
-                #self.axes.set_xlabel(self.Xlabel[xindex])
-            Y = np.linspace(0., (self.ce_value - self.cb_value) * L_ymult[yindex], 10)
-            #self.axes.set_ylabel(self.Ylabel[yindex])
+                X = np.linspace(0.,L_xmax[xindex],lenX)
+            Y = np.linspace(0., (self.ce_value - self.cb_value) * L_ymult[yindex], lenY)
 
+        return X,Y
 
 if __name__ == '__main__':
     software_name = "NablaPy"

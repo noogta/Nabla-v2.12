@@ -52,6 +52,10 @@ class RadarController():
             fgain[t0_lin:] += a_lin*(L[t0_lin:]-t0_lin)
 
             # Gain exponentiel
+
+            # test : 
+            a = 1 + a/10
+            
             if(a != 0 and a != 1):
                 b = np.log(a) / 75
                 fgain[t0_exp:] += a * (np.exp(b * (L[t0_exp:]-t0_exp)))

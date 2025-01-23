@@ -40,6 +40,13 @@ class Canvas:
         self.canvas.mpl_connect('motion_notify_event', self.MouseMoveEvent)
         self.canvas.mpl_connect('button_release_event', self.MouseReleaseEvent)
 
+    def getYPointeur(self):
+        return self.Pointer.y
+    
+
+    def getXPointeur(self):
+        return self.Pointer.x
+    
     def set_mode(self, mode: str, button):
         """
         Méthode qui permet de définir le mode de la classe.
@@ -65,11 +72,11 @@ class Canvas:
             if x is not None and y is not None:
                 if(self.mode == "Pointer"):
                     self.Pointer.set(x, y)
-                    self.parent.pt.setText(str(int(y)))
+                    #self.parent.pt.setText(str(int(y)))
                     self.parent.plot_scope()
                     self.Pointer.plot(self.axes,self.axes_scope)
                     self.canvas.draw()
-                    self.canvasScope.draw()
+                    #self.canvasScope.draw()
                     
                 else:
                     if(self.mode == "Rectangle"):
@@ -295,7 +302,8 @@ class Pointer: #------> Pointeur
         #self.hline = axes.plot([0, self.x + 0.15], [self.y, self.y], color='green', linewidth=0.5)
         self.hline = axes.axhline(self.y, color='red', linewidth=1)
         if(axes_scope != None):
-            self.hlineS = axes_scope.axhline(self.y, color='red', linewidth=1)
+            #self.hlineS = axes_scope.axhline(self.y, color='red', linewidth=10)
+            self.hlineS = axes_scope.axhline(0.2, color='red', linewidth=10)
 
     def clear(self, _axes):
         if(self != None):
