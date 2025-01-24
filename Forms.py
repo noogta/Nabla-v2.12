@@ -61,7 +61,7 @@ class Rectangle:
     
     def create_rectangle(self):
         if(self.label == ""):
-            self.rectangle = plt.Rectangle((self.x1, self.y1), self.x2, self.y2, edgecolor="black", fill=False)
+            self.rectangle = plt.Rectangle((self.x1, self.y1), self.x2, self.y2, edgecolor="black",facecolor="black", fill=False)
         else:
             if(self.label in color):
                 self.rectangle = plt.Rectangle((self.x1, self.y1), self.x2, self.y2, edgecolor=color[self.label], fill=False)
@@ -81,10 +81,10 @@ class Rectangle:
         self.rectangle.set_xy((x_min, y_min))
         """
         if(self.label == ""):
-            self.rectangle = plt.Rectangle((x_min, y_min), width, height, edgecolor="black", fill=False)
+            self.rectangle = plt.Rectangle((x_min, y_min), width, height, edgecolor="black",facecolor='black', fill=False)
         else:
             if(self.label in color):
-                self.rectangle = plt.Rectangle((x_min, y_min), width, height, edgecolor=color[self.label], fill=False)
+                self.rectangle = plt.Rectangle((x_min, y_min), width, height, edgecolor=color[self.label], facecolor=color[self.label], fill=False)
 
     def get_ord_data(self):
         if(self.x1 > self.x2):

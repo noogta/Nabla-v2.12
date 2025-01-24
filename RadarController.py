@@ -49,8 +49,10 @@ class RadarController():
             fgain *= g
 
             # Gain linéaire
-            fgain[t0_lin:] += a_lin*(L[t0_lin:]-t0_lin)
-
+            b_lin= 1 - a_lin*t0_lin
+            #fgain[t0_lin:] += a_lin*(L[t0_lin:]-t0_lin)
+            fgain[t0_lin:] += a_lin*L[t0_lin:]+b_lin
+            
             # Gain exponentiel
 
             # test : 
